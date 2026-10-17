@@ -3,44 +3,39 @@ import asyncio
 
 #part 1
 
-def receive(skt):
-    data, addr = skt.recvfrom(65535)
-    print(f"received data:{data}, receivedaddr:{addr}")
-    return data, addr, skt
+async def handle_client(skt,data,addr):
+    data_response = await asyncio.to_thread(forward,data)
+    skt.sendto(data_response,addr)
 
-async def forward(data,addr):
+def forward(data,addr):
     #send to upstream 8.8.8.8 
     skt2 = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     skt2.sendto(data, ('8.8.8.8', 53))
-    data_response,addr_response = skt2.recvfrom(53)
+    data_response,_ = skt2.recvfrom(53,65535)
     print(f"data from google:{data}, addr receipt:{addr}")
-    return data_response, addr_response
-
-# async def response(data_response,addr,skt):
-#     #map it back to request
-#     skt.sendto(data_response,addr)
-
-# while True:
-#     pass
+    
+    return data_response
 
 async def main():
     try:
         #make udp socket
         skt = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         skt.bind(("127.0.0.1", 1053))
-        data,addr,skt = receive(skt)
+        skt.setblocking(False)
 
-        data_response, _ = asyncio.to_thread(forward(data,addr))
+        loop=asyncio.get_running_loop()
         
-
-
-        skt.sendto(data_response,addr)
+        print(f"received data:{data}, receivedaddr:{addr}")
+        
+        while True:
+            data, addr = skt.recvfrom(65535)
+            asyncio.create_task(handle_client(skt,data,addr)) 
         
     except:
         pass
 
-
-asyncio.run((main))
+if __name__ == "__main__":
+    asyncio.run((main)) 
 
 
 
