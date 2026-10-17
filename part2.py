@@ -3,6 +3,7 @@ import asyncio
 
 import json
 import requests 
+import struct
 
 
 DOH_URL = "https://dns.google/resolve"
