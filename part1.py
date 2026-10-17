@@ -9,9 +9,9 @@ def forward(data,addr):
         skt2.settimeout(5.0)
         skt2.sendto(data, ('8.8.8.8', 53))
         data_response,_ = skt2.recvfrom(65535)
-    print(f"data from google:{data}, addr receipt:{addr}")
+    print(f"data from google:{data_response}, addr receipt:{addr}")
     return data_response
-
+ 
 
 async def handle_client(loop,skt,data,addr):
     data_response = await asyncio.to_thread(forward,data,addr)
@@ -36,7 +36,7 @@ async def main():
             for attempt in range(3):
                 try: 
                     asyncio.create_task(handle_client(loop,skt,data,addr)) 
-                    print(f"received data:{data}, receivedaddr:{addr}")
+                    break
                 except asyncio.TimeoutError as e:
                     if attempt < 4:
                         print("retrying...")
