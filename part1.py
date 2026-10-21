@@ -63,7 +63,6 @@ async def main():
             continue
 
         asyncio.create_task(handle_client(loop,skt,data,addr)) 
-            
 
 if __name__ == "__main__":
     asyncio.run(main()) 
