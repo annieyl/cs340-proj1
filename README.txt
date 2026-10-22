@@ -48,7 +48,7 @@ Design:
 
 Testing (with dig):
 - queried 10 domains for A records: all returned addresses
-- queried github.com: got a CNAME to github.com and its A record
+- queried www.github.com: got a CNAME to github.com and its A record
 
 Extra Credit Part 3: Persistent DoH Session
 
@@ -56,7 +56,7 @@ How to run: Run the following command in this directory:
 ```python3 part3.py```
 
 Design:
-part3.py uses the same libraries as part.py:
+part3.py uses the same libraries as part2.py:
 part3.py is part2.py with two changes:
 - `query` sends every request through a shared `requests.Session()` created at the start instead of `requests.get` each time
     - session keeps the HTTPS connection to dns.google open between requests
