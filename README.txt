@@ -46,7 +46,9 @@ Design:
 - Every query is logged with its name, type, and response size
 - If HTTPS request fails, client gets a server failure response
 
-
+Testing (with dig):
+- queried 10 domains for A records: all returned addresses
+- queried github.com: got a CNAME to github.com and its A record
 
 Extra Credit Part 3: Persistent DoH Session
 
