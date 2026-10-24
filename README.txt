@@ -1,6 +1,10 @@
 Names: Annie Liu (agb2275), Ken Zheng (ktz9099)
 How to run: run the following command inside this directory:
 ```python3 part1.py```
+You may additionally use the optional --upstream and --port flags to set the upstream resolver's address and listening port respectively.
+By defalult, port 1053 and upstream resolver 8.8.8.8 are used. 
+An example of using these flags would be:
+```python3 part1.py --port 5300 --upstream 1.1.1.1```
 
 Design description:
 `main`: handles event loop, waiting for response
@@ -26,6 +30,10 @@ Requirements: Part 2 requires two libraries. Run the following command to downlo
 
 How to run: Run the following command in this directory:
 ```python3 part2.py```
+You may additionally use the optional --upstream and --port flags to set the upstream resolver's URL and listening port respectively.
+By defalult, port 1053 and upstream resolver https://dns.google/resolve are used. 
+An example of using these flags would be:
+```python3 part1.py --port 5300 --upstream https://cloudflare-dns.com/dns-query```
 
 Test with:
 ```dig @127.0.0.1 -p 1053 google.com A```
@@ -54,6 +62,11 @@ Extra Credit Part 3: Persistent DoH Session
 
 How to run: Run the following command in this directory:
 ```python3 part3.py```
+You may additionally use the optional --upstream and --port flags to set the upstream resolver's URL and listening port respectively.
+By defalult, port 1053 and upstream resolver https://dns.google/resolve are used. 
+An example of using these flags would be:
+```python3 part1.py --port 5300 --upstream https://cloudflare-dns.com/dns-query```
+
 
 Design:
 part3.py uses the same libraries as part2.py:
