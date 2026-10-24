@@ -49,10 +49,8 @@ def parse_question(data):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=1053,
-                        help="UDP port to listen on (default: 1053)")
-    parser.add_argument("--upstream", default="8.8.8.8",
-                        help="upstream resolver IP address (default: 8.8.8.8)")
+    parser.add_argument("--port", type=int, default=1053)
+    parser.add_argument("--upstream", default="8.8.8.8")
     return parser.parse_args()
 
 async def main(port, upstream):
