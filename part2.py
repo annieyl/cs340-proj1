@@ -1,25 +1,24 @@
+import argparse
 import socket
 import asyncio
 
-import requests 
+import requests
 from dnslib import DNSRecord, QTYPE, DNSError, RR, A, CNAME
 
 
-DOH_URL = "https://dns.google/resolve"
-
-def query(name, qtype):
+def query(name, qtype, upstream):
     params = {"name": name, "type": qtype}
-    response = requests.get(DOH_URL, params=params, timeout=5)
+    headers = {"accept": "application/dns-json"}
+    response = requests.get(upstream, params=params, headers=headers, timeout=5)
     response.raise_for_status()
     return response.json()
 
 def parse_query(data):
-    try: 
+    try:
         request = DNSRecord.parse(data)
         name = str(request.q.qname)
         qtype = request.q.qtype
         return request, name, qtype
-    
     except DNSError:
         return None
 
@@ -38,18 +37,16 @@ def build_response(request, answer):
         reply.add_answer(RR(record["name"], record["type"], rdata=rdata, ttl=record["TTL"]))
 
     return reply.pack()
-            
 
-async def handle_client(loop, skt, data, addr):
+async def handle_client(loop, skt, data, addr, upstream):
     parsed = parse_query(data)
-    
     if parsed is None:
         return
     request, name, qtype = parsed
 
-    try: 
-        answer = await asyncio.to_thread(query, name, qtype)
-        reply_bytes = build_response(request, answer)  
+    try:
+        answer = await asyncio.to_thread(query, name, qtype, upstream)
+        reply_bytes = build_response(request, answer)
 
     except requests.RequestException:
         reply = request.reply()
@@ -60,22 +57,28 @@ async def handle_client(loop, skt, data, addr):
     print(f"query {name} type {QTYPE[qtype]}, response {len(reply_bytes)} bytes")
     await loop.sock_sendto(skt, reply_bytes, addr)
 
-    
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=1053)
+    parser.add_argument("--upstream", default="https://dns.google/resolve")
+    return parser.parse_args()
 
-async def main():
-    skt = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    skt.bind(("127.0.0.1", 1053))
+async def main(port, upstream):
+    skt = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    skt.bind(("127.0.0.1", port))
     skt.setblocking(False)
+    print(f"listening on 127.0.0.1:{port}, forwarding to {upstream}")
 
     loop = asyncio.get_running_loop()
 
     while True:
-        data, addr = await loop.sock_recvfrom(skt,65535)
+        data, addr = await loop.sock_recvfrom(skt, 65535)
         if len(data) < 12:
             print(f"malformed packet from {addr}")
             continue
 
-        asyncio.create_task(handle_client(loop,skt,data,addr)) 
+        asyncio.create_task(handle_client(loop, skt, data, addr, upstream))
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    args = parse_args()
+    asyncio.run(main(args.port, args.upstream))
